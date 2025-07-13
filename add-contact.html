@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Add new contact</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script src="config.js" defer></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        if (localStorage.getItem("darkMode") === "enabled") {
+          document.body.classList.add("dark-mode");
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <form class="editForm">
+        <label for="firstname">First name</label>
+        <input type="text" name="firstname" id="firstname" />
+
+        <label for="lastname">Last name</label>
+        <input type="text" name="lastname" id="lastname" />
+
+        <label for="mobile">Mobile</label>
+        <input type="text" name="mobile" id="mobile" />
+
+        <label for="email">Email</label>
+        <input type="text" name="email" id="email" />
+
+        <label for="avatar">Photo</label>
+        <input type="file" name="avatar" id="avatar" />
+
+        <button type="submit" class="submitForm">Submit</button>
+      </form>
+
+      <div class="button-group">
+        <button class="homePage" type="button">Home</button>
+      </div>
+    </div>
+
+    <script>
+      document
+        .querySelector(".submitForm")
+        .addEventListener("click", submitForm);
+      document
+        .querySelector(".homePage")
+        .addEventListener("click", () => window.open("index.html", "_self"));
+
+      function submitForm(e) {
+        e.preventDefault();
+
+        const form = new FormData(document.querySelector(".editForm"));
+        form.append("apiKey", apiKey);
+
+        fetch(rootPath + "controller/insert-contact/", {
+          method: "POST",
+          headers: { Accept: "application/json, *.*" },
+          body: form,
+        })
+          .then((res) => res.text())
+          .then((data) => {
+            alert(data === "1" ? "Contact added." : data);
+            window.open("index.html", "_self");
+          });
+      }
+    </script>
+  </body>
+</html>

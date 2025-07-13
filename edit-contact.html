@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Edit contact</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script src="config.js" defer></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        if (localStorage.getItem("darkMode") === "enabled") {
+          document.body.classList.add("dark-mode");
+        }
+      });
+    </script>
+  </head>
+  <body onload="getContact()">
+    <div class="container">
+      <div class="avatarImage"></div>
+
+      <form class="editForm">
+        <label for="firstname">First name</label>
+        <input type="text" name="firstname" id="firstname" readonly />
+
+        <label for="lastname">Last name</label>
+        <input type="text" name="lastname" id="lastname" readonly />
+
+        <label for="mobile">Mobile</label>
+        <input type="text" name="mobile" id="mobile" readonly />
+
+        <label for="email">Email</label>
+        <input type="text" name="email" id="email" readonly />
+
+        <label for="avatar" class="avatarLabel" hidden
+          >Change profile image</label
+        >
+        <input type="file" name="avatar" id="avatar" hidden />
+
+        <button type="submit" class="submitForm" hidden>Submit</button>
+      </form>
+
+      <div class="button-group">
+        <button class="homePage" type="button">Home</button>
+        <button class="editContact" type="button">Edit</button>
+        <button class="deleteContact" type="button">Delete</button>
+      </div>
+    </div>
+
+    <script>
+      const id = getID();
+
+      document.querySelector(".homePage").addEventListener("click", homePage);
+      document
+        .querySelector(".editContact")
+        .addEventListener("click", editContact);
+      document
+        .querySelector(".submitForm")
+        .addEventListener("click", submitForm);
+      document
+        .querySelector(".deleteContact")
+        .addEventListener("click", deleteContact);
+
+      function getID() {
+        const url = window.location.href;
+        return url.slice(url.search("=") + 1);
+      }
+
+      function getContact() {
+        fetch(rootPath + "controller/get-contacts/?id=" + id)
+          .then((response) => response.json())
+          .then((data) => displayOutput(data));
+      }
+
+      function displayOutput(data) {
+        document.querySelector(
+          ".avatarImage"
+        ).innerHTML = `<img src="${rootPath}/controller/uploads/${data[0].avatar}" />`;
+        document.getElementById("firstname").value = data[0].firstname;
+        document.getElementById("lastname").value = data[0].lastname;
+        document.getElementById("mobile").value = data[0].mobile;
+        document.getElementById("email").value = data[0].email;
+      }
+
+      function homePage() {
+        window.open("index.html", "_self");
+      }
+
+      function editContact() {
+        ["firstname", "lastname", "mobile", "email"].forEach(
+          (id) => (document.getElementById(id).readOnly = false)
+        );
+        document.getElementById("avatar").hidden = false;
+        document.querySelector(".submitForm").hidden = false;
+      }
+
+      function submitForm(e) {
+        e.preventDefault();
+
+        const form = new FormData(document.querySelector(".editForm"));
+        form.append("apiKey", apiKey);
+        form.append("id", id);
+
+        fetch(rootPath + "controller/edit-contact/", {
+          method: "POST",
+          headers: { Accept: "application/json, *.*" },
+          body: form,
+        })
+          .then((res) => res.text())
+          .then((data) => {
+            alert(data === "1" ? "Contact edited." : data);
+            homePage();
+          });
+      }
+
+      function deleteContact() {
+        if (confirm("Delete contact. Are you sure?")) {
+          fetch(rootPath + "controller/delete-contact/?id=" + id)
+            .then((res) => res.text())
+            .then((data) => {
+              if (data === "1") {
+                homePage();
+              } else {
+                alert(data);
+              }
+            });
+        }
+      }
+    </script>
+  </body>
+</html>
